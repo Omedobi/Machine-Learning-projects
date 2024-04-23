@@ -1,0 +1,8 @@
+sqlalchemy
+catboost
+joblib
+lightgbm
+streamlit
+xgboost
+zenml
+scikit-learn
