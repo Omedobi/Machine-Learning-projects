@@ -16,9 +16,7 @@ def evaluate_model(
         Annotated[float, "r2"],
         Annotated[float, "mae"],
         Annotated[float, "mse"]
-    ]: 
-        
-    
+    ]:
    try: 
         prediction = model.predict(X_test)
         mse_class = MSE()
@@ -30,6 +28,7 @@ def evaluate_model(
         mae_class = MAE()
         mae = mae_class.calculate_scores(y_test, prediction)
         
-        return r2, mae, mse
+        return mse, r2, mae
    except Exception as e:
        logging.error(f"Error in evaluating model: {e}")
+       raise e

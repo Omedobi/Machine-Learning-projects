@@ -7,11 +7,11 @@ pip install -r Requirements.txt
 
 ```bash
 pip install "zenml[server]"
-zenml up
+zenml up --blocking
 ```
 
 ```bash
 zenml integration install mlflow
 ```
 
-'-> : means return'
+'-> : means return

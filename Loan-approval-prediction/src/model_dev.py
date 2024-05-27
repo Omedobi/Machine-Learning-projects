@@ -1,46 +1,41 @@
 import logging
 from abc import ABC, abstractmethod
 from catboost import CatBoostClassifier
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.base import ClassifierMixin
 
 class Model(ABC):
     
     @abstractmethod
-    
-    def train(self, X_train, y_train, **kwargs):
-        
+    def train(self, X_train, y_train, **kwargs) -> ClassifierMixin:
         pass
     
     
-class CatBoostModel(Model):
+class XGBBoostModel(Model):
 
-    def train(self, X_train, y_train, **kwargs):
-        
+    def train(self, X_train, y_train, **kwargs) -> ClassifierMixin:
         try:
-            
-            cat_b = CatBoostClassifier(**kwargs)
-            cat_b.fit(X_train,y_train)
+            xgb = XGBClassifier(**kwargs)
+            xgb.fit(X_train,y_train)
             logging.info("Model training completed")
-            return cat_b
-    
+            return xgb
         except Exception as e:
-            logging.error(f"Error in training model: {e}")
+            logging.error(f"Error in training XGboost model: {e}")
             raise e
-        
+         
         
 class RandomForestModel(Model):
     
-    def train(self, X_train, y_train, **kwargs):
-        
+    def train(self, X_train, y_train, **kwargs) -> ClassifierMixin:
         try:
-            
             rf = RandomForestClassifier(**kwargs)
             rf.fit(X_train, y_train)
             logging.info("Model training completed")
             return rf
         except Exception as e:
-            logging.info(f"Error in training model: {e}")
+            logging.info(f"Error in training Random Forest model: {e}")
             raise e
             
             

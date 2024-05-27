@@ -21,7 +21,6 @@ class DataPreprocessStrategy(DataStrategy):
     def handle_data(self, data:pd.DataFrame) -> pd.DataFrame:
         
         try:
-            
             data.columns = data.columns.str.strip()
             label_encoder = LabelEncoder()
             cat_cols = data.select_dtypes(include=['object']).columns
