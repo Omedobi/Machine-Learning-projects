@@ -6,3 +6,4 @@ streamlit
 xgboost
 zenml
 scikit-learn
+mlflow
