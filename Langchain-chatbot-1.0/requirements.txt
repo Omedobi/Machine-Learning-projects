@@ -1,0 +1,9 @@
+langchain==0.0.208
+unstructured 
+selenium
+Deeplake 
+openai==0.27.8
+psutil 
+tiktoken
+python-dotenv
+
