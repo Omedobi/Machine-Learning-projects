@@ -14,7 +14,8 @@ zenml experiment-tracker register mlflow_tracker --flavor=mlflow
 zenml stack register mlflow_stack -a default -o default -d mlflow -e mlflow_tracker --set
 zenml stack describe
 zenml model-deployer register mlflow --flavor=mlflow
-
+zenml stack update -d mlflow ~use to update deployer
+zenml stack delete default ~use to delete an active stack~
 ```
 
 ```bash
@@ -25,6 +26,10 @@ print(Client().active_stack.experiment_tracker.get_tracking_url()) #this enable 
 
 ```bash
 - getting the url of the experiment_tracker to run locally.
-mlflow ui --backend-store-uri "file:C:\Users\admin\AppData\Roaming\zenml\local_stores\d6b37deb-d883-4111-8733-a9d0285942b5\mlruns"
+mlflow ui --backend-store-uri "file:C:\Users\admin\AppData\Roaming\zenml\local_stores\0c1099e2-92b6-41fe-9381-f674eeac16ea\mlruns"
 ```
 "-> : means return"
+
+zenml down --blocking
+
+pip cache purge

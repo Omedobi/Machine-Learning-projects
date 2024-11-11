@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier

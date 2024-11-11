@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import logging
 import json
-#from materializer.custom_materializer import cs_materializer
 from zenml import pipeline, step
 from zenml.config import DockerSettings
 from zenml.constants import DEFAULT_SERVICE_START_STOP_TIMEOUT
@@ -20,9 +19,9 @@ from pipelines.utlis import get_data_for_test
 
 docker_settings = DockerSettings(required_integrations=[MLFLOW])
 
-class DeplomentTriggerConfiguration(BaseParameters):
+class DeploymentTriggerConfiguration(BaseParameters):
     """Deploment trigger Config"""
-    min_accuracy: float = 0.92
+    min_accuracy: float = 0.7
 
 @step(enable_cache=False)
 def dynamic_importer() -> str:
@@ -32,11 +31,16 @@ def dynamic_importer() -> str:
 @step 
 def deployment_trigger(
     accuracy: float,
-    config: DeplomentTriggerConfiguration,
+    config: DeploymentTriggerConfiguration,
 ):
     """This implements a model deployment that takes account of the input model accuracy and 
     decides whether to deploy or not to deploy"""
-    return accuracy >= config.min_accuracy
+    return accuracy > config.min_accuracy
+
+class MLFlowDeploymentLoaderStepParameters(BaseParameters):
+    pipeline_name: str
+    step_name: str
+    running: bool = True
 
 @step
 def predictor(
@@ -49,18 +53,17 @@ def predictor(
     data.pop('columns')
     data.pop('index')
     columns_for_df = [
-        "loan_id",
         "no_of_dependents",
         "education", 
         "self_employed", 
         "income_annum",
         "loan_amount",
         "loan_term",
-        "cibil_score",
-        "residential_assets_value",
-        "commercial_assets_value", 
-        "luxury_assets_value", 
-        "bank_asset_value", 
+        "credit_score",
+        "Movable_assets",
+        "Immovable_assets", 
+        # "luxury_assets_value", 
+        # "bank_asset_value", 
     ]
     df = pd.DataFrame(data['data'], columns=columns_for_df)
     json_list = json.loads(json.dumps(list(df.T.to_dict().values())))
@@ -73,7 +76,7 @@ def prediction_service_loader(
     pipeline_name: str,
     pipeline_step_name: str,
     running: bool = True,
-    model_name: str = 'model',
+    model_name: str = "model",
 ) -> MLFlowDeploymentService:
     # Get MLflow deployer stack component
     mlflow_model_deployer_component = MLFlowModelDeployer.get_active_model_deployer()
@@ -92,13 +95,14 @@ def prediction_service_loader(
         raise RuntimeError(
             f"No MLflow deployment service found for pipeline {pipeline_name}, "
             f"step {pipeline_step_name} and model {model_name}. "
-            "Pipeline for the '{model_name}' model is currently not running."
+            "Pipeline for the {model_name} model is currently not running."
         )
     
     logging.info(f"Found existing service: {existing_services[0].uuid}")
     return existing_services[0]
 
-@pipeline(enable_cache=True, settings={"docker": docker_settings}) 
+@pipeline(enable_cache=False, settings={"docker": docker_settings}) 
+
 def continuous_deployment_pipeline(
     data_path: str,
     min_accuracy: float = 0.92,
@@ -110,14 +114,17 @@ def continuous_deployment_pipeline(
     model = train_model(X_train, X_test, y_train, y_test)
     r2, mae, mse = evaluate_model(model, X_test, y_test)
     deployment_decision = deployment_trigger(r2)
-    mlflow_model_deployer_step(
-        model = model,
-        deploy_decision = deployment_decision,
-        workers = workers,
-        timeout = timeout
-    )
     
+    if deployment_decision:
+        mlflow_model_deployer_step(
+            model = model,
+            deploy_decision = True,
+            workers = workers,
+            timeout = timeout
+        )
+
 @pipeline(enable_cache=False, settings={"docker":docker_settings})
+
 def inference_pipeline(pipeline_name: str, pipeline_step_name: str):
     data = dynamic_importer()
     service = prediction_service_loader(

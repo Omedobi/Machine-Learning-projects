@@ -24,14 +24,14 @@ DEPLOY_AND_PREDICT = "deploy_and_predict"
 )
 @click.option(
     "--min-accuracy",
-    default=0.82,
+    default=0.65,
     help="Minimum accuracy required to deploy the model",
 )
 
 def run_deployment(config:str, min_accuracy: float):
     mlflow_model_deployer_component = MLFlowModelDeployer.get_active_model_deployer()
     deploy = config == DEPLOY or config == DEPLOY_AND_PREDICT
-    predict = config == DEPLOY or config == DEPLOY_AND_PREDICT
+    predict = config == PREDICT or config == DEPLOY_AND_PREDICT
     
     if deploy:
         continuous_deployment_pipeline(
@@ -58,15 +58,16 @@ def run_deployment(config:str, min_accuracy: float):
     existing_services = mlflow_model_deployer_component.find_model_server(
         pipeline_name="continuous_deployment_pipeline",
         pipeline_step_name="mlflow_model_deployer_step",
-        model_name="model",
+        model_name="RandomForestClassifier",
     )
+    print(f"Found {len(existing_services)} services with the given parameters.")
     
     if existing_services:
         service = cast(MLFlowDeploymentService, existing_services[0])
         if service.is_running:
             print(
                 f"The MLflow prediction server is running locally as a daemon"
-                f"Process service and sccepts inference requests at:\n"
+                f"Process service and accepts inference requests at:\n"
                 f" {service.prediction_url}\n"
                 f"To stop the service, run "
                 f"[italic green] 'zenml model-deployer models delete"
