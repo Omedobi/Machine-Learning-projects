@@ -63,7 +63,8 @@ def predictor(
         "Movable_assets",
         "Immovable_assets", 
         # "luxury_assets_value", 
-        # "bank_asset_value", 
+        # "bank_asset_value",
+        # "loan_id", 
     ]
     df = pd.DataFrame(data['data'], columns=columns_for_df)
     json_list = json.loads(json.dumps(list(df.T.to_dict().values())))
